@@ -1,0 +1,45 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local config
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+
+# Kotlin
+.kotlin/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Captures
+/captures/
+
+# NDK
+.externalNativeBuild/
+.cxx/
+
+# Keystore (importante para seguridad)
+*.jks
+*.keystore
+
+# Firebase / Google Services (opcional según uso)
+google-services.json
+
+# Proguard
+proguard/
+
+# Temporary files
+*.tmp
+*.temp
