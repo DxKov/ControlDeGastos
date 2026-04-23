@@ -41,9 +41,11 @@ class AccountRepositoryImpl @Inject constructor(
 
     override suspend fun getTotalBalance(): BigDecimal {
         val accounts = dao.observeAll().first()
-        return accounts.fold(BigDecimal.ZERO) { acc, entity ->
-            acc.add(BigDecimal(entity.balance))
-        }
+        return accounts
+            .filter { it.includeInTotal }
+            .fold(BigDecimal.ZERO) { acc, entity ->
+                acc.add(BigDecimal(entity.balance))
+            }
     }
 }
 

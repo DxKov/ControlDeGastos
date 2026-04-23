@@ -179,7 +179,8 @@ fun AccountScreen(
                                 AccountItem(
                                     account = account,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                                    onDelete = { id -> viewModel.onEvent(AccountEvent.DeleteAccount(id)) }
+                                    onDelete = { id -> viewModel.onEvent(AccountEvent.DeleteAccount(id)) },
+                                    onToggleIncludeInTotal = { acc -> viewModel.onEvent(AccountEvent.ToggleIncludeInTotal(acc)) }
                                 )
                             }
                         }

@@ -57,6 +57,7 @@ fun AddAccountDialog(
     var selectedType by remember { mutableStateOf(AccountType.BANK) }
     var selectedColor by remember { mutableStateOf(accountColors[0]) }
     var selectedIcon by remember { mutableStateOf("account_balance") }
+    var includeInTotal by remember { mutableStateOf(true) }
     var nameError by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -183,6 +184,29 @@ fun AddAccountDialog(
                         }
                     }
                 }
+
+                // Include in total toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Incluir en el total", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Text("El saldo de esta cuenta se sumará al total de la página principal", color = Color.Gray, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = includeInTotal,
+                        onCheckedChange = { includeInTotal = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF6C5CE7),
+                            uncheckedThumbColor = Color.Gray,
+                            uncheckedTrackColor = Color.White.copy(alpha = 0.1f),
+                            uncheckedBorderColor = Color.Transparent
+                        )
+                    )
+                }
             }
         },
         confirmButton = {
@@ -203,7 +227,8 @@ fun AddAccountDialog(
                             currency = "MXN",
                             color = selectedColor,
                             icon = selectedIcon,
-                            createdAt = System.currentTimeMillis()
+                            createdAt = System.currentTimeMillis(),
+                            includeInTotal = includeInTotal
                         )
                     )
                 },

@@ -11,5 +11,6 @@ data class Account(
     val initialBalance: BigDecimal,
     val color: Int,
     val icon: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val includeInTotal: Boolean = true
 )

@@ -15,7 +15,8 @@ fun AccountEntity.toDomain(): Account {
         initialBalance = BigDecimal(initialBalance),
         color = color,
         icon = icon,
-        createdAt = createdAt
+        createdAt = createdAt,
+        includeInTotal = includeInTotal
     )
 }
 
@@ -29,7 +30,8 @@ fun Account.toEntity(): AccountEntity {
         initialBalance = initialBalance.toPlainString(),
         color = color,
         icon = icon,
-        createdAt = createdAt
+        createdAt = createdAt,
+        includeInTotal = includeInTotal
     )
 }
 

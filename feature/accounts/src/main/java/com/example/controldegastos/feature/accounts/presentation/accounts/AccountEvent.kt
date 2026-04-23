@@ -6,4 +6,5 @@ sealed class AccountEvent {
     object LoadAccounts : AccountEvent()
     data class SaveAccount(val account: Account) : AccountEvent()
     data class DeleteAccount(val id: Long) : AccountEvent()
+    data class ToggleIncludeInTotal(val account: Account) : AccountEvent()
 }

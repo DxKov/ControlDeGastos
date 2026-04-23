@@ -212,14 +212,47 @@ fun CreditCardScreen(
                                 )
                             }
                             items(uiState.cards, key = { it.id }) { card ->
+                                val showDeleteConfirm = remember { mutableStateOf(false) }
                                 val dismissState = rememberSwipeToDismissBoxState(
                                     confirmValueChange = { value ->
                                         if (value == SwipeToDismissBoxValue.EndToStart) {
-                                            viewModel.onEvent(CreditCardEvent.DeleteCard(card))
-                                            true
+                                            showDeleteConfirm.value = true
+                                            false
                                         } else false
                                     }
                                 )
+
+                                LaunchedEffect(showDeleteConfirm.value) {
+                                    if (!showDeleteConfirm.value && dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+                                        dismissState.reset()
+                                    }
+                                }
+
+                                if (showDeleteConfirm.value) {
+                                    AlertDialog(
+                                        onDismissRequest = { showDeleteConfirm.value = false },
+                                        containerColor = Color(0xFF1C1C24),
+                                        title = { Text("¿Eliminar tarjeta?", color = Color.White, fontWeight = FontWeight.Bold) },
+                                        text = { Text("Se perderá todo el historial de esta tarjeta.", color = Color.Gray) },
+                                        confirmButton = {
+                                            Button(
+                                                onClick = {
+                                                    viewModel.onEvent(CreditCardEvent.DeleteCard(card))
+                                                    showDeleteConfirm.value = false
+                                                },
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE17055))
+                                            ) {
+                                                Text("Eliminar", fontWeight = FontWeight.Bold)
+                                            }
+                                        },
+                                        dismissButton = {
+                                            TextButton(onClick = { showDeleteConfirm.value = false }) {
+                                                Text("Cancelar", color = Color.Gray)
+                                            }
+                                        }
+                                    )
+                                }
+
                                 val isSwiping = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
 
                                 Column(

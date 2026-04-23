@@ -258,14 +258,47 @@ fun AnalyticsScreen(
                                     )
                                 }
                                 items(uiState.transactions, key = { it.id }) { transaction ->
+                                    var showDeleteConfirm by remember { mutableStateOf(false) }
                                     val dismissState = rememberSwipeToDismissBoxState(
                                         confirmValueChange = { value ->
                                             if (value == SwipeToDismissBoxValue.EndToStart) {
-                                                viewModel.deleteTransaction(transaction)
-                                                true
+                                                showDeleteConfirm = true
+                                                false
                                             } else false
                                         }
                                     )
+                                    
+                                    LaunchedEffect(showDeleteConfirm) {
+                                        if (!showDeleteConfirm && dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+                                            dismissState.reset()
+                                        }
+                                    }
+
+                                    if (showDeleteConfirm) {
+                                        AlertDialog(
+                                            onDismissRequest = { showDeleteConfirm = false },
+                                            containerColor = Color(0xFF1C1C24),
+                                            title = { Text("¿Eliminar transacción?", color = Color.White, fontWeight = FontWeight.Bold) },
+                                            text = { Text("Esta acción no se puede deshacer.", color = Color.Gray) },
+                                            confirmButton = {
+                                                Button(
+                                                    onClick = {
+                                                        viewModel.deleteTransaction(transaction)
+                                                        showDeleteConfirm = false
+                                                    },
+                                                    colors = ButtonDefaults.buttonColors(containerColor = AccentCoral)
+                                                ) {
+                                                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                                                }
+                                            },
+                                            dismissButton = {
+                                                TextButton(onClick = { showDeleteConfirm = false }) {
+                                                    Text("Cancelar", color = Color.Gray)
+                                                }
+                                            }
+                                        )
+                                    }
+
                                     val isSwiping = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
                                     SwipeToDismissBox(
                                         state = dismissState,

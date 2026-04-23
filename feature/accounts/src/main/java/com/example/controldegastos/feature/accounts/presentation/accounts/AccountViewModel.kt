@@ -35,7 +35,15 @@ class AccountViewModel @Inject constructor(
                 is AccountEvent.LoadAccounts -> loadAccounts()
                 is AccountEvent.SaveAccount -> saveAccount(event.account)
                 is AccountEvent.DeleteAccount -> deleteAccount(event.id)
+                is AccountEvent.ToggleIncludeInTotal -> toggleIncludeInTotal(event.account)
             }
+        }
+    }
+
+    private suspend fun toggleIncludeInTotal(account: com.example.controldegastos.feature.accounts.domain.model.Account) {
+        val updated = account.copy(includeInTotal = !account.includeInTotal)
+        saveAccountUseCase(updated).onFailure {
+            _state.value = AccountUiState.Error(it.message ?: "Error al actualizar la cuenta")
         }
     }
 

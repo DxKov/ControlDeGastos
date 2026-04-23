@@ -14,5 +14,6 @@ data class AccountEntity(
     val currency: String,
     val color: Int,
     val icon: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val includeInTotal: Boolean = true
 )

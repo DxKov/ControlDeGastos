@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,17 +25,51 @@ import java.util.*
 fun AccountItem(
     account: Account,
     modifier: Modifier = Modifier,
-    onDelete: (Long) -> Unit = {}
+    onDelete: (Long) -> Unit = {},
+    onToggleIncludeInTotal: (Account) -> Unit = {}
 ) {
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete(account.id)
-                true
+                showDeleteConfirm = true
+                false // Don't dismiss yet, wait for confirmation
             } else false
         }
     )
+
+    // Reset swipe state if dialog is dismissed or cancelled
+    LaunchedEffect(showDeleteConfirm) {
+        if (!showDeleteConfirm && dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+            dismissState.reset()
+        }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            containerColor = Color(0xFF1C1C24),
+            title = { Text("¿Eliminar cuenta?", color = Color.White, fontWeight = FontWeight.Bold) },
+            text = { Text("Esta acción no se puede deshacer. Todos los datos asociados a esta cuenta se perderán.", color = Color.Gray) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete(account.id)
+                        showDeleteConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE17055))
+                ) {
+                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        )
+    }
 
     // Only show red bg when the user is actively swiping toward EndToStart
     val isSwiping = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
@@ -86,7 +121,7 @@ fun AccountItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Box(
                         modifier = Modifier
                             .size(44.dp)
@@ -101,29 +136,55 @@ fun AccountItem(
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = account.name,
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Text(
-                            text = if (account.type.name == "BANK") "Banco" else "Efectivo",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (account.type.name == "BANK") "Banco" else "Efectivo",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                            if (!account.includeInTotal) {
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "• Excluida del total",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFFFDCB6E)
+                                )
+                            }
+                        }
                     }
                 }
-                Text(
-                    text = currencyFormatter.format(account.balance),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (account.balance >= java.math.BigDecimal.ZERO)
-                        Color(0xFF00CEC9)
-                    else
-                        Color(0xFFE17055),
-                    fontWeight = FontWeight.Bold
-                )
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = currencyFormatter.format(account.balance),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (account.balance >= java.math.BigDecimal.ZERO)
+                            Color(0xFF00CEC9)
+                        else
+                            Color(0xFFE17055),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Switch(
+                        checked = account.includeInTotal,
+                        onCheckedChange = { onToggleIncludeInTotal(account) },
+                        modifier = Modifier.scale(0.7f),
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(account.color),
+                            uncheckedThumbColor = Color.Gray,
+                            uncheckedTrackColor = Color.White.copy(alpha = 0.1f),
+                            uncheckedBorderColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     }
