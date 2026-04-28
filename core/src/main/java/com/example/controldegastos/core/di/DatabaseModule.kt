@@ -50,7 +50,6 @@ object DatabaseModule {
             GastoDatabase::class.java,
             "gasto_db"
         )
-            .fallbackToDestructiveMigration() // Safe for dev: drops and recreates on version bump
             .addCallback(seedCallback)
             .build()
     }

@@ -24,10 +24,6 @@ import com.example.controldegastos.feature.accounts.presentation.accounts.Accoun
 import java.text.NumberFormat
 import java.util.*
 
-private val BgColor = Color(0xFF0F0F12)
-private val CardBg = Color(0xFF1A1A24)
-private val AccentPurple = Color(0xFF6C5CE7)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(
@@ -48,25 +44,26 @@ fun AccountScreen(
     }
 
     Scaffold(
-        containerColor = BgColor,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Mis Cuentas",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
-                containerColor = AccentPurple,
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar Cuenta")
@@ -76,14 +73,13 @@ fun AccountScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgColor)
                 .padding(padding)
         ) {
             when (val uiState = state) {
                 is AccountUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = AccentPurple
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -91,53 +87,40 @@ fun AccountScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = 96.dp),
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Total Balance Hero Card
+                        // Minimalist Balance Section
                         item {
-                            Box(
+                            Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 1.dp
                             ) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                                    elevation = CardDefaults.cardElevation(0.dp)
+                                Column(
+                                    modifier = Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                Brush.linearGradient(
-                                                    colors = listOf(AccentPurple, Color(0xFF9B59B6))
-                                                )
-                                            )
-                                            .padding(24.dp)
-                                    ) {
-                                        Column {
-                                            Text(
-                                                "Balance Total",
-                                                color = Color.White.copy(alpha = 0.8f),
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                            Spacer(Modifier.height(8.dp))
-                                            Text(
-                                                text = currencyFormatter.format(uiState.total),
-                                                color = Color.White,
-                                                fontSize = 36.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(Modifier.height(4.dp))
-                                            Text(
-                                                "${uiState.accounts.size} cuenta(s) activa(s)",
-                                                color = Color.White.copy(alpha = 0.6f),
-                                                fontSize = 12.sp
-                                            )
-                                        }
-                                    }
+                                    Text(
+                                        "Balance Total",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = currencyFormatter.format(uiState.total),
+                                        style = MaterialTheme.typography.displaySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        "${uiState.accounts.size} cuenta(s) activa(s)",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    )
                                 }
                             }
                         }
@@ -154,31 +137,30 @@ fun AccountScreen(
                                     Text("💰", fontSize = 48.sp)
                                     Text(
                                         "Sin cuentas aún",
-                                        color = Color.White,
-                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
                                         "Toca el botón + para agregar tu primera cuenta",
-                                        color = Color.Gray,
-                                        fontSize = 14.sp
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
                             }
                         } else {
                             item {
                                 Text(
-                                    "Tus cuentas",
-                                    color = Color.Gray,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                                    "Tus activos",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                                 )
                             }
                             items(uiState.accounts, key = { it.id }) { account ->
                                 AccountItem(
                                     account = account,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
                                     onDelete = { id -> viewModel.onEvent(AccountEvent.DeleteAccount(id)) },
                                     onToggleIncludeInTotal = { acc -> viewModel.onEvent(AccountEvent.ToggleIncludeInTotal(acc)) }
                                 )
@@ -194,10 +176,10 @@ fun AccountScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text("⚠️", fontSize = 40.sp)
-                        Text(uiState.message, color = Color.Red, fontSize = 15.sp)
+                        Text(uiState.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
                         Button(
                             onClick = { viewModel.onEvent(AccountEvent.LoadAccounts) },
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text("Reintentar")
                         }

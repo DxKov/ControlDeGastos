@@ -27,11 +27,6 @@ import com.example.controldegastos.feature.credit_cards.presentation.cards.Credi
 import java.text.NumberFormat
 import java.util.*
 
-private val BgColor = Color(0xFF0F0F12)
-private val CardBg = Color(0xFF1A1A24)
-private val AccentPurple = Color(0xFF6C5CE7)
-private val AccentGreen = Color(0xFF00B894)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreditCardScreen(
@@ -83,26 +78,27 @@ fun CreditCardScreen(
     }
 
     Scaffold(
-        containerColor = BgColor,
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Tarjetas de Crédito",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
-                containerColor = AccentPurple,
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar Tarjeta")
@@ -112,14 +108,13 @@ fun CreditCardScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgColor)
                 .padding(padding)
         ) {
             when (val uiState = state) {
                 is CreditCardUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = AccentPurple
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -129,51 +124,41 @@ fun CreditCardScreen(
                         contentPadding = PaddingValues(bottom = 96.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Total debt hero card
+                        // Minimalist Debt Section
                         item {
-                            Box(
+                            Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 1.dp
                             ) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                                    elevation = CardDefaults.cardElevation(0.dp)
+                                Column(
+                                    modifier = Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                Brush.linearGradient(
-                                                    colors = listOf(Color(0xFFE17055), Color(0xFFD63031))
-                                                )
-                                            )
-                                            .padding(24.dp)
-                                    ) {
-                                        Column {
-                                            Text(
-                                                "Deuda Total",
-                                                color = Color.White.copy(alpha = 0.8f),
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                            Spacer(Modifier.height(6.dp))
-                                            Text(
-                                                currencyFormatter.format(uiState.totalDebt),
-                                                color = Color.White,
-                                                fontSize = 36.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(Modifier.height(4.dp))
-                                            Text(
-                                                "${uiState.cards.size} tarjeta(s) activa(s)",
-                                                color = Color.White.copy(alpha = 0.6f),
-                                                fontSize = 12.sp
-                                            )
-                                        }
-                                    }
+                                    Text(
+                                        "Deuda Consolidada",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = currencyFormatter.format(uiState.totalDebt),
+                                        style = MaterialTheme.typography.displaySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (uiState.totalDebt > java.math.BigDecimal.ZERO) 
+                                            MaterialTheme.colorScheme.error 
+                                        else 
+                                            MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        "${uiState.cards.size} tarjeta(s) activa(s)",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    )
                                 }
                             }
                         }
@@ -190,25 +175,24 @@ fun CreditCardScreen(
                                     Text("💳", fontSize = 48.sp)
                                     Text(
                                         "Sin tarjetas aún",
-                                        color = Color.White,
-                                        fontSize = 18.sp,
+                                        style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
                                         "Toca el botón + para agregar tu primera tarjeta",
-                                        color = Color.Gray,
-                                        fontSize = 14.sp
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
                             }
                         } else {
                             item {
                                 Text(
-                                    "Mis tarjetas  •  desliza para eliminar",
-                                    color = Color.Gray,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                                    "Mis tarjetas",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                                 )
                             }
                             items(uiState.cards, key = { it.id }) { card ->
@@ -231,23 +215,23 @@ fun CreditCardScreen(
                                 if (showDeleteConfirm.value) {
                                     AlertDialog(
                                         onDismissRequest = { showDeleteConfirm.value = false },
-                                        containerColor = Color(0xFF1C1C24),
-                                        title = { Text("¿Eliminar tarjeta?", color = Color.White, fontWeight = FontWeight.Bold) },
-                                        text = { Text("Se perderá todo el historial de esta tarjeta.", color = Color.Gray) },
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        title = { Text("¿Eliminar tarjeta?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) },
+                                        text = { Text("Se perderá todo el historial de esta tarjeta.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)) },
                                         confirmButton = {
                                             Button(
                                                 onClick = {
                                                     viewModel.onEvent(CreditCardEvent.DeleteCard(card))
                                                     showDeleteConfirm.value = false
                                                 },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE17055))
+                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                                             ) {
                                                 Text("Eliminar", fontWeight = FontWeight.Bold)
                                             }
                                         },
                                         dismissButton = {
                                             TextButton(onClick = { showDeleteConfirm.value = false }) {
-                                                Text("Cancelar", color = Color.Gray)
+                                                Text("Cancelar", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                                             }
                                         }
                                     )
@@ -264,27 +248,24 @@ fun CreditCardScreen(
                                         enableDismissFromStartToEnd = false,
                                         backgroundContent = {
                                             val bgColor by animateColorAsState(
-                                                targetValue = if (isSwiping) Color(0xFFE17055) else Color.Transparent,
+                                                targetValue = if (isSwiping) MaterialTheme.colorScheme.error.copy(alpha = 0.2f) else Color.Transparent,
                                                 label = "swipe_bg"
                                             )
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
-                                                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                                                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                                                     .background(bgColor)
                                                     .padding(end = 28.dp),
                                                 contentAlignment = Alignment.CenterEnd
                                             ) {
                                                 if (isSwiping) {
-                                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Delete,
-                                                            contentDescription = "Eliminar",
-                                                            tint = Color.White,
-                                                            modifier = Modifier.size(24.dp)
-                                                        )
-                                                        Text("Eliminar", color = Color.White, fontSize = 10.sp)
-                                                    }
+                                                    Icon(
+                                                        imageVector = Icons.Default.Delete,
+                                                        contentDescription = "Eliminar",
+                                                        tint = MaterialTheme.colorScheme.error,
+                                                        modifier = Modifier.size(24.dp)
+                                                    )
                                                 }
                                             }
                                         }
@@ -292,18 +273,18 @@ fun CreditCardScreen(
                                         CreditCardWidget(card = card)
                                     }
 
-                                    // Pay button attached below the card
+                                    // Minimalist Pay button attached below the card
                                     Surface(
                                         onClick = { payingCard = card },
                                         enabled = card.usedBalance > java.math.BigDecimal.ZERO,
                                         modifier = Modifier.fillMaxWidth(),
-                                        color = if (card.usedBalance > java.math.BigDecimal.ZERO)
-                                            AccentGreen.copy(alpha = 0.15f)
-                                        else
-                                            Color.White.copy(alpha = 0.04f),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                                         shape = RoundedCornerShape(
                                             bottomStart = 20.dp, bottomEnd = 20.dp
-                                        )
+                                        ),
+                                        border = if (card.usedBalance > java.math.BigDecimal.ZERO) 
+                                            androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                        else null
                                     ) {
                                         Row(
                                             modifier = Modifier
@@ -314,14 +295,14 @@ fun CreditCardScreen(
                                         ) {
                                             Text(
                                                 text = if (card.usedBalance > java.math.BigDecimal.ZERO)
-                                                    "💳  Pagar tarjeta  —  ${currencyFormatter.format(card.usedBalance)} de deuda"
+                                                    "Pagar — ${currencyFormatter.format(card.usedBalance)}"
                                                 else
-                                                    "✅  Sin deuda",
+                                                    "Sin deuda",
                                                 color = if (card.usedBalance > java.math.BigDecimal.ZERO)
-                                                    AccentGreen
+                                                    MaterialTheme.colorScheme.primary
                                                 else
-                                                    Color.Gray,
-                                                fontSize = 13.sp,
+                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                                style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.SemiBold
                                             )
                                         }
@@ -339,10 +320,10 @@ fun CreditCardScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text("⚠️", fontSize = 40.sp)
-                        Text(uiState.message, color = Color.Red)
+                        Text(uiState.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
                         Button(
                             onClick = { viewModel.onEvent(CreditCardEvent.Load) },
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) { Text("Reintentar") }
                     }
                 }

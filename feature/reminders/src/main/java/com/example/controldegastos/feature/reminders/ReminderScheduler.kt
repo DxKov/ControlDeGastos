@@ -6,12 +6,13 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 /**
  * Class responsible for scheduling background workers for payment alerts.
  */
 class ReminderScheduler @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     /**
      * Schedules a one-time reminder worker with a delay based on the payment due date.
@@ -50,6 +51,35 @@ class ReminderScheduler @Inject constructor(
         WorkManager.getInstance(context).enqueueUniqueWork(
             "payment_reminder_$cardId",
             ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
+
+    /**
+     * Schedules a daily reminder at 8:00 PM.
+     */
+    fun scheduleDailyExpenseReminder() {
+        val now = LocalDateTime.now()
+        var targetTime = now.withHour(20).withMinute(0).withSecond(0).withNano(0)
+        
+        if (targetTime.isBefore(now)) {
+            targetTime = targetTime.plusDays(1)
+        }
+
+        val initialDelay = Duration.between(now, targetTime)
+
+        val workRequest = PeriodicWorkRequestBuilder<DailyExpenseReminderWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(initialDelay.toMinutes(), TimeUnit.MINUTES)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiresBatteryNotLow(false)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "daily_expense_reminder",
+            ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
     }

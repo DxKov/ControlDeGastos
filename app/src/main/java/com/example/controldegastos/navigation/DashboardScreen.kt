@@ -23,10 +23,6 @@ import com.example.controldegastos.feature.accounts.presentation.accounts.Accoun
 import java.text.NumberFormat
 import java.util.*
 
-private val BgColor = Color(0xFF0F0F12)
-private val CardBg = Color(0xFF1A1A24)
-private val AccentPurple = Color(0xFF6C5CE7)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -48,27 +44,37 @@ fun DashboardScreen(
     }
 
     Scaffold(
-        containerColor = BgColor,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text("GastoApp", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Text(
+                            "Control de Gastos", 
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
                         Text(
                             buildString {
                                 val cal = Calendar.getInstance()
                                 append(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale("es", "MX"))?.replaceFirstChar { it.uppercase() } ?: "")
                                 append(" ${cal.get(Calendar.YEAR)}")
                             },
-                            color = Color.Gray,
-                            fontSize = 12.sp
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = Color.Gray)
+                        Icon(
+                            Icons.Default.Notifications, 
+                            contentDescription = "Notificaciones", 
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
                     }
                 }
             )
@@ -76,8 +82,8 @@ fun DashboardScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddTransaction,
-                containerColor = AccentPurple,
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nuevo Movimiento")
@@ -87,141 +93,98 @@ fun DashboardScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgColor)
                 .padding(padding),
             contentPadding = PaddingValues(bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Hero balance card
+            // Minimalist Balance Section
             item {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                        elevation = CardDefaults.cardElevation(0.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.linearGradient(
-                                        colors = listOf(Color(0xFF6C5CE7), Color(0xFF9B59B6), Color(0xFF2C2C54))
-                                    )
-                                )
-                                .padding(28.dp)
-                        ) {
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.AccountBalanceWallet,
-                                        contentDescription = null,
-                                        tint = Color.White.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(Modifier.width(6.dp))
-                                    Text("Patrimonio Total", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
-                                }
-                                Spacer(Modifier.height(8.dp))
-                                Text(
-                                    text = currencyFormatter.format(total),
-                                    color = Color.White,
-                                    fontSize = 42.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(Modifier.height(16.dp))
-                                HorizontalDivider(color = Color.White.copy(alpha = 0.2f))
-                                Spacer(Modifier.height(16.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    BalanceStat(
-                                        icon = Icons.Default.TrendingUp,
-                                        label = "Cuentas",
-                                        value = "${accounts.size}",
-                                        iconTint = Color(0xFF00CEC9)
-                                    )
-                                    BalanceStat(
-                                        icon = Icons.Default.AttachMoney,
-                                        label = "Moneda",
-                                        value = "MXN",
-                                        iconTint = Color(0xFFFDCB6E)
-                                    )
-                                    BalanceStat(
-                                        icon = Icons.Default.CreditCard,
-                                        label = "Tarjetas",
-                                        value = "—",
-                                        iconTint = Color(0xFFE17055)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Quick actions row
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text("Acciones Rápidas", color = Color.Gray, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "Balance General", 
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = currencyFormatter.format(total),
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    
+                    Spacer(Modifier.height(24.dp))
+                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        QuickActionCard(
-                            icon = Icons.Default.Add,
-                            label = "Movimiento",
-                            color = AccentPurple,
-                            modifier = Modifier.weight(1f),
-                            onClick = onNavigateToAddTransaction
-                        )
-                        QuickActionCard(
-                            icon = Icons.Default.AccountBalance,
+                        BalanceStatMinimal(
                             label = "Cuentas",
-                            color = Color(0xFF00CEC9),
-                            modifier = Modifier.weight(1f),
-                            onClick = onNavigateToAccounts
+                            value = "${accounts.size}",
+                            color = MaterialTheme.colorScheme.secondary
                         )
-                        QuickActionCard(
-                            icon = Icons.Default.BarChart,
-                            label = "Análisis",
-                            color = Color(0xFFE17055),
-                            modifier = Modifier.weight(1f),
-                            onClick = onNavigateToAnalytics
+                        Box(modifier = Modifier.width(1.dp).height(24.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                        BalanceStatMinimal(
+                            label = "Moneda",
+                            value = "MXN",
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
             }
 
-            // Accounts summary
+            // Quick Actions (Clean and Subdued)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    QuickActionItem(
+                        icon = Icons.Default.Add,
+                        label = "Gasto",
+                        onClick = onNavigateToAddTransaction,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Icons.Default.AccountBalance,
+                        label = "Cuentas",
+                        onClick = onNavigateToAccounts,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickActionItem(
+                        icon = Icons.Default.BarChart,
+                        label = "Análisis",
+                        onClick = onNavigateToAnalytics,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // Accounts List
             if (accounts.isNotEmpty()) {
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Mis Cuentas", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                        TextButton(onClick = onNavigateToAccounts) {
-                            Text("Ver todas", color = AccentPurple, fontSize = 13.sp)
-                        }
-                    }
+                    Text(
+                        "Mis Cuentas", 
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
                 }
                 items(accounts.take(3)) { account ->
-                    Card(
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg)
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 1.dp
                     ) {
                         Row(
                             modifier = Modifier
@@ -233,69 +196,40 @@ fun DashboardScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
-                                        .size(42.dp)
-                                        .background(Color(account.color).copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
+                                        .size(40.dp)
+                                        .background(Color(account.color).copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = if (account.type.name == "BANK") Icons.Default.AccountBalance else Icons.Default.AccountBalanceWallet,
                                         contentDescription = null,
                                         tint = Color(account.color),
-                                        modifier = Modifier.size(22.dp)
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text(account.name, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                    Text(
+                                        account.name, 
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium
+                                    )
                                     Text(
                                         if (account.type.name == "BANK") "Banco" else "Efectivo",
-                                        color = Color.Gray, fontSize = 12.sp
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
                                 }
                             }
                             Text(
                                 currencyFormatter.format(account.balance),
-                                color = if (account.balance >= java.math.BigDecimal.ZERO) Color(0xFF00CEC9) else Color(0xFFE17055),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (account.balance >= java.math.BigDecimal.ZERO) 
+                                    MaterialTheme.colorScheme.onSurface 
+                                else 
+                                    MaterialTheme.colorScheme.error
                             )
-                        }
-                    }
-                }
-            } else {
-                // Empty state call-to-action
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardBg)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text("🚀", fontSize = 40.sp)
-                            Text("¡Bienvenido a GastoApp!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                            Text(
-                                "Empieza agregando tus cuentas para llevar el control de tus finanzas.",
-                                color = Color.Gray,
-                                fontSize = 13.sp
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Button(
-                                onClick = onNavigateToAccounts,
-                                colors = ButtonDefaults.buttonColors(containerColor = AccentPurple),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("Agregar Cuenta")
-                            }
                         }
                     }
                 }
@@ -305,45 +239,49 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun BalanceStat(icon: ImageVector, label: String, value: String, iconTint: Color) {
+private fun BalanceStatMinimal(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.height(4.dp))
-        Text(value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        Text(label, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp)
+        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = color.copy(alpha = 0.7f))
     }
 }
 
 @Composable
-private fun QuickActionCard(
+private fun QuickActionItem(
     icon: ImageVector,
     label: String,
-    color: Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Card(
+    OutlinedCard(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.12f))
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.outlineVariant)
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(color.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
-            }
-            Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            Icon(
+                icon, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                label, 
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

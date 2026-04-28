@@ -34,12 +34,11 @@ fun AccountItem(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
                 showDeleteConfirm = true
-                false // Don't dismiss yet, wait for confirmation
+                false
             } else false
         }
     )
 
-    // Reset swipe state if dialog is dismissed or cancelled
     LaunchedEffect(showDeleteConfirm) {
         if (!showDeleteConfirm && dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
             dismissState.reset()
@@ -49,30 +48,30 @@ fun AccountItem(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            containerColor = Color(0xFF1C1C24),
-            title = { Text("¿Eliminar cuenta?", color = Color.White, fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción no se puede deshacer. Todos los datos asociados a esta cuenta se perderán.", color = Color.Gray) },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("¿Eliminar cuenta?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) },
+            text = { Text("Se perderán todos los datos asociados a esta cuenta.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)) },
             confirmButton = {
                 Button(
                     onClick = {
                         onDelete(account.id)
                         showDeleteConfirm = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE17055))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                 }
             }
         )
     }
 
-    // Only show red bg when the user is actively swiping toward EndToStart
     val isSwiping = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
+    val accentColor = Color(account.color)
 
     SwipeToDismissBox(
         state = dismissState,
@@ -80,39 +79,37 @@ fun AccountItem(
         enableDismissFromStartToEnd = false,
         backgroundContent = {
             val bgColor by animateColorAsState(
-                targetValue = if (isSwiping) Color(0xFFE17055) else Color.Transparent,
+                targetValue = if (isSwiping) MaterialTheme.colorScheme.error.copy(alpha = 0.2f) else Color.Transparent,
                 label = "swipe_bg"
             )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(bgColor)
-                    .padding(end = 20.dp),
+                    .padding(end = 24.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                // Only render the icon when actively swiping to avoid bleed-through
                 if (isSwiping) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Eliminar",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
         }
     ) {
-        Card(
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(account.color).copy(alpha = 0.12f)
-            ),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
             border = androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
-                color = Color(account.color).copy(alpha = 0.3f)
-            )
+                color = accentColor.copy(alpha = 0.4f)
+            ),
+            tonalElevation = 1.dp
         ) {
             Row(
                 modifier = Modifier
@@ -124,37 +121,39 @@ fun AccountItem(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .background(Color(account.color).copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
+                            .size(40.dp)
+                            .background(accentColor.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = account.name.take(1).uppercase(),
-                            color = Color(account.color),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            color = accentColor,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = account.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = if (account.type.name == "BANK") "Banco" else "Efectivo",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
+                                text = if (account.type.name == "BANK") "BANCO" else "EFECTIVO",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                letterSpacing = 0.5.sp
                             )
                             if (!account.includeInTotal) {
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    text = "• Excluida del total",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFFDCB6E)
+                                    text = "• EXCLUIDA",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                                    letterSpacing = 0.5.sp
                                 )
                             }
                         }
@@ -164,12 +163,12 @@ fun AccountItem(
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = currencyFormatter.format(account.balance),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
                         color = if (account.balance >= java.math.BigDecimal.ZERO)
-                            Color(0xFF00CEC9)
+                            MaterialTheme.colorScheme.primary
                         else
-                            Color(0xFFE17055),
-                        fontWeight = FontWeight.Bold
+                            MaterialTheme.colorScheme.error
                     )
                     Spacer(Modifier.height(4.dp))
                     Switch(
@@ -177,10 +176,10 @@ fun AccountItem(
                         onCheckedChange = { onToggleIncludeInTotal(account) },
                         modifier = Modifier.scale(0.7f),
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(account.color),
-                            uncheckedThumbColor = Color.Gray,
-                            uncheckedTrackColor = Color.White.copy(alpha = 0.1f),
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                            uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                             uncheckedBorderColor = Color.Transparent
                         )
                     )

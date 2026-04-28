@@ -6,10 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.example.controldegastos.navigation.MainScaffold
 import com.example.controldegastos.ui.theme.GastoAppTheme
+import androidx.compose.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -29,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 // Main container with the app's background color
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF0F0F12)
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     MainScaffold()
                 }

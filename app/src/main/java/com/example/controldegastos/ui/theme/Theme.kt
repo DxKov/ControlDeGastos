@@ -9,17 +9,17 @@ import androidx.compose.ui.graphics.Color
  * Uses #0F0F12 as the primary background color for a premium dark mode feel.
  */
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFBB86FC),      // Purple Accent
-    secondary = Color(0xFF00E5FF),    // Electric Blue
-    tertiary = Color(0xFF3700B3),     // Dark Blue
-    background = Color(0xFF0F0F12),   // Main Background
-    surface = Color(0xFF0F0F12),
-    onPrimary = Color.Black,
-    onSecondary = Color.Black,
+    primary = Color(0xFF818CF8),      // Indigo suave
+    secondary = Color(0xFF94A3B8),    // Slate/Gris azulado
+    tertiary = Color(0xFF475569),     // Slate oscuro
+    background = Color(0xFF0A0A0A),   // Fondo casi negro
+    surface = Color(0xFF161616),      // Superficie oscura
+    onPrimary = Color.White,
+    onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    error = Color(0xFFCF6679)
+    onBackground = Color(0xFFE2E8F0), // Texto claro suave
+    onSurface = Color(0xFFE2E8F0),
+    error = Color(0xFFEF4444)
 )
 
 @Composable

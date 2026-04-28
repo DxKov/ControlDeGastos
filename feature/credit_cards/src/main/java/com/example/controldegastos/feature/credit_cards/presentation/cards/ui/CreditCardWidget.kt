@@ -9,7 +9,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.controldegastos.feature.credit_cards.domain.model.CreditCard
 import java.text.NumberFormat
 import java.util.*
@@ -24,33 +26,20 @@ fun CreditCardWidget(
         (card.usedBalance.toDouble() / card.creditLimit.toDouble())
     } else 0.0
     
-    val progressColor = if (usagePercentage > 0.8) Color(0xFFE91E63) else Color(0xFFBB86FC)
+    val accentColor = Color(card.color)
     
-    Card(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, accentColor.copy(alpha = 0.5f)),
+        tonalElevation = 2.dp
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(card.color),
-                            Color(card.color).copy(alpha = 0.7f).let { c ->
-                                // Darken the second stop slightly
-                                Color(
-                                    red = (c.red * 0.7f).coerceIn(0f, 1f),
-                                    green = (c.green * 0.7f).coerceIn(0f, 1f),
-                                    blue = (c.blue * 0.7f).coerceIn(0f, 1f)
-                                )
-                            }
-                        )
-                    )
-                )
                 .padding(24.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -63,18 +52,20 @@ fun CreditCardWidget(
                         Text(
                             text = card.name,
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = card.bank,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            text = card.bank.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            letterSpacing = 1.sp
                         )
                     }
                     Text(
                         text = "**** ${card.last4Digits}",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
                 
@@ -87,33 +78,42 @@ fun CreditCardWidget(
                 ) {
                     Column {
                         Text(
-                            text = "Disponible",
+                            text = "DISPONIBLE",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            letterSpacing = 0.5.sp
                         )
                         Text(
                             text = currencyFormatter.format(card.availableBalance),
                             style = MaterialTheme.typography.headlineSmall,
-                            color = Color.White
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    Text(
-                        text = "Corte: Día ${card.cutoffDay}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
+                    Surface(
+                        color = accentColor.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Día ${card.cutoffDay}",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = accentColor,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     LinearProgressIndicator(
-                        progress = usagePercentage.toFloat(),
+                        progress = { usagePercentage.toFloat() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(8.dp),
-                        color = progressColor,
-                        trackColor = Color.White.copy(alpha = 0.2f),
+                            .height(6.dp),
+                        color = accentColor,
+                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
                         strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                     )
                     Row(
@@ -121,14 +121,14 @@ fun CreditCardWidget(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Uso: ${(usagePercentage * 100).toInt()}%",
+                            text = "USO: ${(usagePercentage * 100).toInt()}%",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                         )
                         Text(
-                            text = "Límite: ${currencyFormatter.format(card.creditLimit)}",
+                            text = "LÍMITE: ${currencyFormatter.format(card.creditLimit)}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                         )
                     }
                 }

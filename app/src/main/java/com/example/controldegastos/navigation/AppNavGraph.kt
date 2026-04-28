@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
@@ -89,21 +90,22 @@ fun MainScaffold() {
         bottomBar = {
             if (currentRoute != Screen.AddTransaction.route) {
                 NavigationBar(
-                    containerColor = Color(0xFF0F0F12),
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    tonalElevation = 0.dp
                 ) {
                     navigationItems.forEach { item ->
                         NavigationBarItem(
                             icon = { Icon(item.icon!!, contentDescription = item.title) },
-                            label = { Text(item.title) },
+                            label = { Text(item.title, style = MaterialTheme.typography.labelSmall) },
                             selected = currentRoute == item.route,
                             onClick = { navController.navigateToTab(item.route) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Color(0xFF6C5CE7),
-                                selectedTextColor = Color(0xFF6C5CE7),
-                                unselectedIconColor = Color.Gray,
-                                unselectedTextColor = Color.Gray,
-                                indicatorColor = Color(0xFF6C5CE7).copy(alpha = 0.15f)
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                             )
                         )
                     }
