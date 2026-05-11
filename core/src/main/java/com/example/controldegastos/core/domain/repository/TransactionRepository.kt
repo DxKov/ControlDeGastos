@@ -10,6 +10,10 @@ interface TransactionRepository {
     suspend fun getTransactionById(id: Long): Transaction?
 
     fun getTransactionsByDate(startDate: LocalDate, endDate: LocalDate): Flow<List<Transaction>>
-    
+
+    fun getTransactionsByCycleId(cycleId: Long): Flow<List<Transaction>>
+
+    fun getTransactionsBySource(sourceId: Long, sourceType: String): Flow<List<Transaction>>
+
     suspend fun deleteTransaction(transaction: Transaction): Result<Unit>
 }

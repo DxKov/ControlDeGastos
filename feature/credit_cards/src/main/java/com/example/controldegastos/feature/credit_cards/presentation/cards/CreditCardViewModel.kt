@@ -3,6 +3,8 @@ package com.example.controldegastos.feature.credit_cards.presentation.cards
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.controldegastos.core.domain.repository.AccountRepository
+import com.example.controldegastos.core.domain.repository.TransactionRepository
+import com.example.controldegastos.core.domain.model.TransactionType
 import com.example.controldegastos.feature.credit_cards.domain.model.CardPayment
 import com.example.controldegastos.feature.credit_cards.domain.repository.CreditCardRepository
 import com.example.controldegastos.feature.credit_cards.domain.usecase.CloseBillingCycleUseCase
@@ -15,14 +17,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
+
+import com.example.controldegastos.feature.credit_cards.domain.usecase.CalculateMonthlyCardDebtUseCase
 
 @HiltViewModel
 class CreditCardViewModel @Inject constructor(
     private val repository: CreditCardRepository,
     private val accountRepository: AccountRepository,
+    private val transactionRepository: TransactionRepository,
     private val closeBillingCycleUseCase: CloseBillingCycleUseCase,
-    private val payCreditCardUseCase: PayCreditCardUseCase
+    private val payCreditCardUseCase: PayCreditCardUseCase,
+    private val calculateMonthlyCardDebtUseCase: CalculateMonthlyCardDebtUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<CreditCardUiState>(CreditCardUiState.Loading)
@@ -69,10 +76,17 @@ class CreditCardViewModel @Inject constructor(
             val totalDebt = cards.fold(BigDecimal.ZERO) { acc, card ->
                 acc.add(card.usedBalance)
             }
+
+            val monthlyDebtPerCard = mutableMapOf<Long, BigDecimal>()
+
+            cards.forEach { card ->
+                monthlyDebtPerCard[card.id] = calculateMonthlyCardDebtUseCase(card)
+            }
             val current = _state.value
             _state.value = CreditCardUiState.Success(
                 cards = cards,
                 totalDebt = totalDebt,
+                monthlyDebtPerCard = monthlyDebtPerCard,
                 paymentSuccess = (current as? CreditCardUiState.Success)?.paymentSuccess ?: false
             )
         }
@@ -127,3 +141,4 @@ class CreditCardViewModel @Inject constructor(
         _state.value = current.copy(paymentSuccess = false)
     }
 }
+

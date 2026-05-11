@@ -19,7 +19,8 @@ fun TransactionEntity.toDomain(): Transaction {
         destinationId = destinationId,
         cycleId = cycleId,
         note = note,
-        isRecurring = isRecurring
+        isRecurring = isRecurring,
+        installmentMonths = installmentMonths
     )
 }
 
@@ -35,7 +36,8 @@ fun Transaction.toEntity(): TransactionEntity {
         destinationId = destinationId,
         cycleId = cycleId,
         note = note,
-        isRecurring = isRecurring
+        isRecurring = isRecurring,
+        installmentMonths = installmentMonths
     )
 }
 

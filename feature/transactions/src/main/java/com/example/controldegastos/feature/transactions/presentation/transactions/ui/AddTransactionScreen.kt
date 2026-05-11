@@ -2,6 +2,7 @@ package com.example.controldegastos.feature.transactions.presentation.transactio
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -63,6 +64,8 @@ fun AddTransactionScreen(
     var selectedCategoryId by remember { mutableStateOf<Long?>(1L) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var showDatePicker by remember { mutableStateOf(false) }
+    // Meses sin intereses — solo aplica cuando se elige tarjeta de crédito
+    var selectedInstallmentMonths by remember { mutableStateOf<Int?>(null) }
 
     val backgroundColor = Color(0xFF0F0F12)
     val accentPurple = Color(0xFF6C5CE7)
@@ -192,6 +195,38 @@ fun AddTransactionScreen(
                 }
             }
 
+            // Meses sin intereses (solo visible cuando la fuente es tarjeta de crédito)
+            if (selectedSourceType == SourceType.CREDIT_CARD && selectedType == TransactionType.EXPENSE) {
+                val installmentOptions = listOf(null, 3, 6, 9, 12)
+                Text("¿Meses sin intereses?", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    installmentOptions.forEach { months ->
+                        val isSelected = selectedInstallmentMonths == months
+                        val label = if (months == null) "Sin meses" else "$months MSI"
+                        Surface(
+                            onClick = { selectedInstallmentMonths = months },
+                            shape = MaterialTheme.shapes.small,
+                            color = if (isSelected) accentPurple.copy(alpha = 0.25f) else cardBg,
+                            border = if (isSelected)
+                                BorderStroke(1.5.dp, accentPurple)
+                            else
+                                BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+                        ) {
+                            Text(
+                                text = label,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                color = if (isSelected) accentPurple else Color.Gray,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+            }
+
             // Destination selector (only for TRANSFER)
             if (selectedType == TransactionType.TRANSFER) {
                 Text("Cuenta de destino", style = MaterialTheme.typography.labelLarge, color = Color.Gray)
@@ -280,7 +315,8 @@ fun AddTransactionScreen(
                                 sourceType = selectedSourceType,
                                 sourceId = selectedSourceId!!,
                                 destinationId = if (isTransfer) selectedDestinationId else null,
-                                note = note.ifEmpty { null }
+                                note = note.ifEmpty { null },
+                                installmentMonths = if (selectedSourceType == SourceType.CREDIT_CARD) selectedInstallmentMonths else null
                             )
                         ))
                     }

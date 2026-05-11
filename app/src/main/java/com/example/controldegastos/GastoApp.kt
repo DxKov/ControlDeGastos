@@ -18,5 +18,6 @@ class GastoApp : Application() {
     override fun onCreate() {
         super.onCreate()
         reminderScheduler.scheduleDailyExpenseReminder()
+        reminderScheduler.scheduleCutoffReminder()
     }
 }

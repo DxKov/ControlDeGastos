@@ -36,7 +36,8 @@ object DatabaseModule {
                 (5, 'Salud',       'local_hospital',${0xFF00CEC9.toInt()}),
                 (6, 'Educación',   'school',        ${0xFF00B894.toInt()}),
                 (7, 'Compras',     'shopping_bag',  ${0xFFE84393.toInt()}),
-                (8, 'Otros',       'more_horiz',    ${0xFF636E72.toInt()})
+                (8, 'Otros',       'more_horiz',    ${0xFF636E72.toInt()}),
+                (9, 'Pago de Tarjeta', 'credit_score', ${0xFF00B894.toInt()})
                 """.trimIndent()
             )
         }
@@ -51,6 +52,7 @@ object DatabaseModule {
             "gasto_db"
         )
             .addCallback(seedCallback)
+            .addMigrations(GastoDatabase.MIGRATION_4_5, GastoDatabase.MIGRATION_5_6)
             .build()
     }
 

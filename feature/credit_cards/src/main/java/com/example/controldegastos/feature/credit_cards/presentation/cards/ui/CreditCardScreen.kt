@@ -30,22 +30,12 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreditCardScreen(
-    viewModel: CreditCardViewModel = hiltViewModel()
+    viewModel: CreditCardViewModel = hiltViewModel(),
+    onNavigateToDetail: (Long) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
-    val accounts by viewModel.accounts.collectAsState(initial = emptyList())
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
     var showAddDialog by remember { mutableStateOf(false) }
-    var payingCard by remember { mutableStateOf<com.example.controldegastos.core.domain.model.CreditCard?>(null) }
-
-    // Success snackbar
-    val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(state) {
-        if (state is CreditCardUiState.Success && (state as CreditCardUiState.Success).paymentSuccess) {
-            snackbarHostState.showSnackbar("✅ Pago registrado exitosamente")
-            viewModel.onEvent(CreditCardEvent.ClearPaymentSuccess)
-        }
-    }
 
     if (showAddDialog) {
         AddCreditCardDialog(
@@ -57,29 +47,8 @@ fun CreditCardScreen(
         )
     }
 
-    payingCard?.let { card ->
-        PayCreditCardDialog(
-            card = card,
-            accounts = accounts,
-            isProcessing = (state as? CreditCardUiState.Success)?.isProcessingPayment ?: false,
-            onDismiss = { payingCard = null },
-            onPay = { accountId, amount, paymentType ->
-                viewModel.onEvent(
-                    CreditCardEvent.PayCard(
-                        cardId = card.id,
-                        sourceAccountId = accountId,
-                        amount = amount,
-                        paymentType = paymentType
-                    )
-                )
-                payingCard = null
-            }
-        )
-    }
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -159,6 +128,116 @@ fun CreditCardScreen(
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                     )
+                                }
+                            }
+                        }
+
+                        // Per-card monthly debt breakdown — only shown when cards have debt
+                        val cardsWithDebt = uiState.cards.filter { it.usedBalance > java.math.BigDecimal.ZERO }
+                        if (cardsWithDebt.isNotEmpty()) {
+                            item {
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = MaterialTheme.colorScheme.surface,
+                                    tonalElevation = 1.dp
+                                ) {
+                                    Column(modifier = Modifier.padding(20.dp)) {
+                                        Text(
+                                            "Deuda por Tarjeta",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                        Spacer(Modifier.height(14.dp))
+                                        cardsWithDebt.forEachIndexed { index, card ->
+                                            val monthlyAmount = uiState.monthlyDebtPerCard[card.id] ?: card.usedBalance
+                                            val fraction = if (uiState.totalDebt > java.math.BigDecimal.ZERO)
+                                                card.usedBalance.divide(uiState.totalDebt, 4, java.math.RoundingMode.HALF_UP).toFloat().coerceIn(0f, 1f)
+                                            else 0f
+                                            val cardColor = Color(card.color)
+
+                                            Column {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                    ) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(10.dp)
+                                                                .clip(RoundedCornerShape(3.dp))
+                                                                .background(cardColor)
+                                                        )
+                                                        Column {
+                                                            Text(
+                                                                card.name,
+                                                                style = MaterialTheme.typography.bodyMedium,
+                                                                fontWeight = FontWeight.SemiBold,
+                                                                color = MaterialTheme.colorScheme.onSurface
+                                                            )
+                                                            Text(
+                                                                card.bank,
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                                                            )
+                                                        }
+                                                    }
+                                                    Column(horizontalAlignment = Alignment.End) {
+                                                        Text(
+                                                            "Cuota mensual",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                                                        )
+                                                        Text(
+                                                            currencyFormatter.format(monthlyAmount),
+                                                            style = MaterialTheme.typography.bodyMedium,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = MaterialTheme.colorScheme.error
+                                                        )
+                                                        if (monthlyAmount < card.usedBalance) {
+                                                            Text(
+                                                                "Total: ${currencyFormatter.format(card.usedBalance)}",
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                Spacer(Modifier.height(6.dp))
+                                                // Proportional progress bar
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(4.dp)
+                                                        .clip(RoundedCornerShape(2.dp))
+                                                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth(fraction)
+                                                            .fillMaxHeight()
+                                                            .background(
+                                                                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                                                    colors = listOf(
+                                                                        cardColor.copy(alpha = 0.7f),
+                                                                        cardColor
+                                                                    )
+                                                                )
+                                                            )
+                                                    )
+                                                }
+                                                if (index < cardsWithDebt.lastIndex) {
+                                                    Spacer(Modifier.height(14.dp))
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -254,7 +333,7 @@ fun CreditCardScreen(
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxSize()
-                                                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                                                    .clip(RoundedCornerShape(20.dp))
                                                     .background(bgColor)
                                                     .padding(end = 28.dp),
                                                 contentAlignment = Alignment.CenterEnd
@@ -270,43 +349,15 @@ fun CreditCardScreen(
                                             }
                                         }
                                     ) {
-                                        CreditCardWidget(card = card)
-                                    }
-
-                                    // Minimalist Pay button attached below the card
-                                    Surface(
-                                        onClick = { payingCard = card },
-                                        enabled = card.usedBalance > java.math.BigDecimal.ZERO,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                                        shape = RoundedCornerShape(
-                                            bottomStart = 20.dp, bottomEnd = 20.dp
-                                        ),
-                                        border = if (card.usedBalance > java.math.BigDecimal.ZERO) 
-                                            androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                        else null
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp, vertical = 12.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.CenterVertically
+                                        Surface(
+                                            onClick = { onNavigateToDetail(card.id) },
+                                            color = Color.Transparent,
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Text(
-                                                text = if (card.usedBalance > java.math.BigDecimal.ZERO)
-                                                    "Pagar — ${currencyFormatter.format(card.usedBalance)}"
-                                                else
-                                                    "Sin deuda",
-                                                color = if (card.usedBalance > java.math.BigDecimal.ZERO)
-                                                    MaterialTheme.colorScheme.primary
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                                style = MaterialTheme.typography.labelMedium,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
+                                            CreditCardWidget(card = card)
                                         }
                                     }
+                                    Spacer(Modifier.height(16.dp))
                                 }
                             }
                         }

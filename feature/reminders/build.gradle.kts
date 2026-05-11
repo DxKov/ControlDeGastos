@@ -32,6 +32,7 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":core"))
+    implementation(project(":feature:credit_cards"))
     
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

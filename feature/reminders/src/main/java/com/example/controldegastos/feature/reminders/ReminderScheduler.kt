@@ -57,6 +57,10 @@ class ReminderScheduler @Inject constructor(
 
     /**
      * Schedules a daily reminder at 8:00 PM.
+     *
+     * Uses CANCEL_AND_REENQUEUE so the initial delay is always recalculated
+     * from the current time, preventing drift that could cause the notification
+     * to arrive in the early morning instead of 8 PM.
      */
     fun scheduleDailyExpenseReminder() {
         val now = LocalDateTime.now()
@@ -77,10 +81,44 @@ class ReminderScheduler @Inject constructor(
             )
             .build()
 
+        // CANCEL_AND_REENQUEUE ensures the initial delay is recalculated on every app start,
+        // fixing the bug where the reminder arrived in the early morning (stale delay from
+        // a previous KEEP policy that never re-evaluated the target time).
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "daily_expense_reminder",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            workRequest
+        )
+    }
+
+    /**
+     * Schedules a daily worker at 9:00 AM that checks if today is the cutoff day
+     * for any credit card and sends a notification with the amount owed.
+     */
+    fun scheduleCutoffReminder() {
+        val now = LocalDateTime.now()
+        var targetTime = now.withHour(9).withMinute(0).withSecond(0).withNano(0)
+
+        if (targetTime.isBefore(now)) {
+            targetTime = targetTime.plusDays(1)
+        }
+
+        val initialDelay = Duration.between(now, targetTime)
+
+        val workRequest = PeriodicWorkRequestBuilder<CutoffDayWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(initialDelay.toMinutes(), TimeUnit.MINUTES)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiresBatteryNotLow(false)
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "cutoff_day_reminder",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             workRequest
         )
     }
 }
+

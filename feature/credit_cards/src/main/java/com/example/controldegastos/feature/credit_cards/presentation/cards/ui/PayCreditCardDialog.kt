@@ -37,13 +37,18 @@ private val AccentCoral = Color(0xFFE17055)
 fun PayCreditCardDialog(
     card: CreditCard,
     accounts: List<Account>,
+    monthlyPayment: BigDecimal? = null,  // Pre-calculated monthly installment amount
     isProcessing: Boolean = false,
     onDismiss: () -> Unit,
     onPay: (sourceAccountId: Long, amount: BigDecimal, paymentType: PaymentType) -> Unit
 ) {
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
-    val minimumPayment = card.usedBalance.multiply(BigDecimal("0.10")) // 10% minimum
     val fullBalance = card.usedBalance
+    // Minimum = monthly installment if available, otherwise 10% of total debt
+    val minimumPayment = when {
+        monthlyPayment != null && monthlyPayment > BigDecimal.ZERO -> monthlyPayment
+        else -> fullBalance.multiply(BigDecimal("0.10"))
+    }
 
     var selectedAccountId by remember { mutableStateOf(accounts.firstOrNull()?.id) }
     var amountText by remember { mutableStateOf("") }

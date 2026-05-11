@@ -28,4 +28,8 @@ sealed class Screen(
             return "add_transaction?sourceId=${sourceId ?: -1L}&type=${type ?: ""}"
         }
     }
+
+    object CardDetail : Screen("card_detail/{cardId}", "Detalles de Tarjeta") {
+        fun createRoute(cardId: Long) = "card_detail/$cardId"
+    }
 }

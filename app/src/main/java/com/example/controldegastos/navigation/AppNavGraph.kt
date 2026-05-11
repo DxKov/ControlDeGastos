@@ -52,7 +52,20 @@ fun AppNavGraph(
         }
 
         composable(Screen.CreditCards.route) {
-            CreditCardScreen()
+            CreditCardScreen(
+                onNavigateToDetail = { cardId ->
+                    navController.navigate(Screen.CardDetail.createRoute(cardId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.CardDetail.route,
+            arguments = listOf(navArgument("cardId") { type = NavType.LongType })
+        ) {
+            com.example.controldegastos.feature.credit_cards.presentation.cards.ui.CreditCardDetailScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Analytics.route) {

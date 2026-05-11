@@ -20,5 +20,6 @@ data class TransactionEntity(
     val destinationId: Long? = null, // For TRANSFER: the receiving account ID
     val cycleId: Long? = null,
     val note: String? = null,
-    val isRecurring: Boolean = false
+    val isRecurring: Boolean = false,
+    val installmentMonths: Int? = null  // null = pago normal; 3/6/9/12 = meses sin intereses
 )

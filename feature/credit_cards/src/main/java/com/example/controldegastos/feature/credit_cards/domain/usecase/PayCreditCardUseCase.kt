@@ -1,6 +1,5 @@
 package com.example.controldegastos.feature.credit_cards.domain.usecase
 
-import com.example.controldegastos.core.domain.model.CardPayment
 import com.example.controldegastos.core.domain.model.PaymentType
 import com.example.controldegastos.core.domain.model.SourceType
 import com.example.controldegastos.core.domain.model.Transaction
@@ -59,41 +58,32 @@ class PayCreditCardUseCase @Inject constructor(
             account.copy(balance = account.balance.subtract(amount))
         )
 
-        // 2. Reduce card debt (usedBalance)
-        val newUsedBalance = (card.usedBalance.subtract(finalPaymentAmount)).max(BigDecimal.ZERO)
-        cardRepo.updateCard(card.copy(usedBalance = newUsedBalance))
-
-        // 3. Update billing cycle debt if active cycle exists
+        // 2. Update billing cycle debt if active cycle exists
         val cycle = cardRepo.getCurrentCycle(cardId).first()
         if (cycle != null) {
             val newCycleDebt = (cycle.totalDebt.subtract(finalPaymentAmount)).max(BigDecimal.ZERO)
             cardRepo.updateBillingCycle(cycle.copy(totalDebt = newCycleDebt))
         }
 
-        // 4. Register through the repository's existing payment mechanism (for audit trail)
-        if (cycle != null) {
-            cardRepo.registerPayment(
-                CardPayment(
-                    cardId = cardId,
-                    cycleId = cycle.id,
-                    amount = finalPaymentAmount,
-                    type = paymentType,
-                    date = date
-                )
-            )
-        }
-
-        // 5. Save a Transaction record so it appears in Analytics
+        // 3. Save a Transaction record so it appears in Analytics
+        // We do this BEFORE updating the card, because updating the card triggers
+        // the Flow emission in the ViewModel. If the transaction isn't saved yet,
+        // the UI won't include this payment in the monthly calculation.
         transactionRepo.addTransaction(
             Transaction(
                 amount = amount,
                 type = TransactionType.EXPENSE,       // Money leaving the account
                 date = date,
-                categoryId = 8L,                      // "Otros" category
+                categoryId = 9L,                      // "Pago de Tarjeta" category
                 sourceType = SourceType.ACCOUNT,
                 sourceId = sourceAccountId,
                 note = "Pago tarjeta: ${card.name}"
             )
         )
+
+        // 4. Reduce card debt (usedBalance)
+        // This triggers `cardRepo.observeAll()`, so it must be the LAST step.
+        val newUsedBalance = (card.usedBalance.subtract(finalPaymentAmount)).max(BigDecimal.ZERO)
+        cardRepo.updateCard(card.copy(usedBalance = newUsedBalance))
     }.map { Unit }
 }

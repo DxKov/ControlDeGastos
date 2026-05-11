@@ -29,6 +29,16 @@ class TransactionRepositoryImpl @Inject constructor(
             .map { entities -> entities.map { it.toDomain() } }
     }
 
+    override fun getTransactionsByCycleId(cycleId: Long): Flow<List<Transaction>> {
+        return dao.getTransactionsByCycleId(cycleId)
+            .map { entities -> entities.map { it.toDomain() } }
+    }
+
+    override fun getTransactionsBySource(sourceId: Long, sourceType: String): Flow<List<Transaction>> {
+        return dao.getTransactionsBySource(sourceId, sourceType)
+            .map { entities -> entities.map { it.toDomain() } }
+    }
+
     override suspend fun deleteTransaction(transaction: Transaction): Result<Unit> = runCatching {
         dao.deleteTransaction(transaction.toEntity())
     }

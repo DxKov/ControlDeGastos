@@ -9,6 +9,8 @@ sealed class CreditCardUiState {
     data class Success(
         val cards: List<CreditCard>,
         val totalDebt: BigDecimal,
+        /** Monthly installment payment per card: amount/months for MSI, full amount otherwise. */
+        val monthlyDebtPerCard: Map<Long, BigDecimal> = emptyMap(),
         val paymentSuccess: Boolean = false,
         val isProcessingPayment: Boolean = false
     ) : CreditCardUiState()

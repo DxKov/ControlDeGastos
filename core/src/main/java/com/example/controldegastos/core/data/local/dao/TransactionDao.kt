@@ -18,6 +18,9 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity)
 
+    @Query("SELECT * FROM transactions WHERE cycleId = :cycleId ORDER BY date DESC")
+    fun getTransactionsByCycleId(cycleId: Long): Flow<List<TransactionEntity>>
+
     @Delete
     suspend fun deleteTransaction(transaction: TransactionEntity)
 

@@ -19,6 +19,9 @@ class AddTransactionUseCase @Inject constructor(
     private val cardRepo: CreditCardRepository
 ) {
     suspend operator fun invoke(transaction: Transaction): Result<Unit> = runCatching {
+        // Keep a reference to the resolved cycle id for CREDIT_CARD transactions
+        var resolvedCycleId: Long? = null
+
         // Business logic to affect balances based on source type
         when (transaction.sourceType) {
             SourceType.ACCOUNT -> {
@@ -88,10 +91,17 @@ class AddTransactionUseCase @Inject constructor(
                     TransactionType.TRANSFER -> cycle.totalDebt.add(transaction.amount)
                 }
                 cardRepo.updateBillingCycle(cycle.copy(totalDebt = newTotalDebt))
+
+                // Store the cycle id so we can link the transaction to it
+                resolvedCycleId = cycle.id
             }
         }
         
-        // 3. Persist the transaction movement
-        transactionRepo.addTransaction(transaction)
+        // 3. Persist the transaction — inject cycleId for credit card purchases so that
+        //    the monthly installment calculation (amount / installmentMonths) works correctly.
+        transactionRepo.addTransaction(
+            if (resolvedCycleId != null) transaction.copy(cycleId = resolvedCycleId)
+            else transaction
+        )
     }.map { Unit }
 }
